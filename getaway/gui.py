@@ -4,6 +4,8 @@ from tkinter import *
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
+from tkinter.scrolledtext import ScrolledText
+import tkinter.font as tkFont
 
 
 class GUI(Tk):
@@ -49,6 +51,7 @@ class _StartScreen(Frame):
         self._controller = controller
 
         self._labels = {}
+        self._chatbox = {}
         self._canvas = {}
         self._cap = {}
         self._concentric = []
@@ -60,6 +63,7 @@ class _StartScreen(Frame):
         self.__create_movies()
         self.__create_concentric()
         self.__create_buttons()
+        self.__create_chatbox()
 
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
@@ -85,10 +89,27 @@ class _StartScreen(Frame):
     def __create_buttons(self):
         self._buttons['shoot'] = Button(self, text='shoot')
         self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
-        self._buttons['shoot'].place(x=50, y=800, width=200, height=50)
+        self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
+
+    def __create_chatbox(self):
+        for id_, name in enumerate(['friend_bg', 'me_bg']):
+            self._chatbox[name] = Text(self,
+                                       wrap=WORD,
+                                       highlightbackground='black',
+                                       border=0,
+                                       font=("helvetica", 18),
+                                       fg='white',
+                                       state=DISABLED,
+                                       bg='black')
+
+            self._chatbox[name].place(x=1 + 1000 * id_, y=599, width=300, height=100)
 
     def __click_shoot_button(self, event):
         self._controller.client.play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
+        self._chatbox['friend_bg'].config(state=NORMAL)
+        self._chatbox['friend_bg'].insert(END, 'fighting!\n')
+        self._chatbox['friend_bg'].see(END)
+        self._chatbox['friend_bg'].config(state=DISABLED)
 
     def _play_movie(self):
         self._show_frame(0)
@@ -98,11 +119,10 @@ class _StartScreen(Frame):
     def _show_frame(self, who):
         name = 'friend_bg' if who == 0 else 'me_bg'
         self._canvas[name].delete('all')
-        ret, frame = self._cap[name].read()
 
+        ret, frame = self._cap[name].read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         img = Image.fromarray(cv2image).resize((800, 600))
-        imgtk = ImageTk.PhotoImage(image=img)
-        self._images[name] = imgtk
+        self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
