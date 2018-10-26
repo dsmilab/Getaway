@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import cv2
 from PIL import Image, ImageTk
+from glob import glob
 
 
 class GUI(Tk):
@@ -43,31 +44,49 @@ class _StartScreen(Frame):
         self._controller = controller
 
         self._labels = {}
+        self._canvas = {}
         self._cap = {}
+        self._concentric = []
+        self._images = {}
         self.__init_screen()
-        self._play_movie()
 
     def __init_screen(self):
-        self._labels['friend_bg'] = Label(self)
-        self._labels['friend_bg'].place(x=0, y=0, width=600, height=400)
+        self.__create_movies()
+        self.__create_concentric()
+
+    def __create_movies(self):
+        self._canvas['friend_bg'] = Canvas(self)
+        self._canvas['friend_bg'].place(x=0, y=50, width=600, height=400)
         self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181025_210601.mp4')
 
-        self._labels['me_bg'] = Label(self)
-        self._labels['me_bg'].place(x=600, y=0, width=600, height=400)
+        self._canvas['me_bg'] = Canvas(self)
+        self._canvas['me_bg'].place(x=600, y=50, width=600, height=400)
         self._cap['me_bg'] = cv2.VideoCapture('data/map/20181025_211153.mp4')
+
+        self.after(16, self._play_movie)
+
+    def __create_concentric(self):
+        files = sorted(glob('data/concentric/*.png'))
+        for filename in files:
+            img = Image.open(filename).convert('RGBA')
+            img = img.resize((100, 100), Image.ANTIALIAS)
+            self._concentric.append(ImageTk.PhotoImage(img))
+
+        # self._canvas['friend_concentric'] = Canvas(self)
+        # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
 
     def _play_movie(self):
         self._show_frame(0)
         self._show_frame(1)
-        self.after(10, self._play_movie)
+        self.after(16, self._play_movie)
 
     def _show_frame(self, who):
         name = 'friend_bg' if who == 0 else 'me_bg'
         ret, frame = self._cap[name].read()
 
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-
         img = Image.fromarray(cv2image).resize((600, 400))
         imgtk = ImageTk.PhotoImage(image=img)
-        self._labels[name].imgtk = imgtk
-        self._labels[name].configure(image=imgtk)
+        self._images[name] = imgtk
+        self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
+        self._canvas[name].create_image(300, 200, image=self._concentric[0], anchor=CENTER)
