@@ -10,7 +10,7 @@ class GUI(Tk):
     def __init__(self, master=None):
         Tk.__init__(self, master)
         self.title('Getaway')
-        self.geometry('1200x800')
+        self.geometry('1600x1200')
         self.resizable(width=False, height=False)
         self._stage = 0
         self._screen = None
@@ -56,11 +56,11 @@ class _StartScreen(Frame):
 
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
-        self._canvas['friend_bg'].place(x=0, y=50, width=600, height=400)
+        self._canvas['friend_bg'].place(x=0, y=50, width=800, height=600)
         self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181025_210601.mp4')
 
         self._canvas['me_bg'] = Canvas(self)
-        self._canvas['me_bg'].place(x=600, y=50, width=600, height=400)
+        self._canvas['me_bg'].place(x=800, y=50, width=800, height=600)
         self._cap['me_bg'] = cv2.VideoCapture('data/map/20181025_211153.mp4')
 
         self.after(16, self._play_movie)
@@ -82,11 +82,12 @@ class _StartScreen(Frame):
 
     def _show_frame(self, who):
         name = 'friend_bg' if who == 0 else 'me_bg'
+        self._canvas[name].delete('all')
         ret, frame = self._cap[name].read()
 
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        img = Image.fromarray(cv2image).resize((600, 400))
+        img = Image.fromarray(cv2image).resize((800, 600))
         imgtk = ImageTk.PhotoImage(image=img)
         self._images[name] = imgtk
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
-        self._canvas[name].create_image(300, 200, image=self._concentric[0], anchor=CENTER)
+        self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
