@@ -1,5 +1,6 @@
+from .config import *
+from .client import *
 from tkinter import *
-from tkinter import ttk
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
@@ -10,9 +11,9 @@ class GUI(Tk):
     def __init__(self, master=None):
         Tk.__init__(self, master)
         self.title('Getaway')
-        self.geometry('1600x1200')
+        self.geometry('1800x1100')
         self.resizable(width=False, height=False)
-        self._stage = 0
+        self._client = Client()
         self._screen = None
 
         self.__init_window()
@@ -36,6 +37,10 @@ class GUI(Tk):
         self._screen.grid(row=0, column=0, sticky="nsew")
         self._screen.tkraise()
 
+    @property
+    def client(self):
+        return self._client
+
 
 class _StartScreen(Frame):
 
@@ -48,19 +53,21 @@ class _StartScreen(Frame):
         self._cap = {}
         self._concentric = []
         self._images = {}
+        self._buttons = {}
         self.__init_screen()
 
     def __init_screen(self):
         self.__create_movies()
         self.__create_concentric()
+        self.__create_buttons()
 
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
-        self._canvas['friend_bg'].place(x=0, y=50, width=800, height=600)
+        self._canvas['friend_bg'].place(x=0, y=100, width=800, height=600)
         self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181025_210601.mp4')
 
         self._canvas['me_bg'] = Canvas(self)
-        self._canvas['me_bg'].place(x=800, y=50, width=800, height=600)
+        self._canvas['me_bg'].place(x=1000, y=100, width=800, height=600)
         self._cap['me_bg'] = cv2.VideoCapture('data/map/20181025_211153.mp4')
 
         self.after(16, self._play_movie)
@@ -74,6 +81,14 @@ class _StartScreen(Frame):
 
         # self._canvas['friend_concentric'] = Canvas(self)
         # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
+
+    def __create_buttons(self):
+        self._buttons['shoot'] = Button(self, text='shoot')
+        self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
+        self._buttons['shoot'].place(x=50, y=800, width=200, height=50)
+
+    def __click_shoot_button(self, event):
+        self._controller.client.play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
 
     def _play_movie(self):
         self._show_frame(0)
