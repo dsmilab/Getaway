@@ -5,6 +5,7 @@ from tkinter import *
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
+import threading
 from tkinter.scrolledtext import ScrolledText
 import tkinter.font as tkFont
 
@@ -92,6 +93,22 @@ class _StartScreen(Frame):
         self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
         self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
 
+        self._buttons['aware_left'] = Button(self, text='aware_left')
+        self._buttons['aware_left'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 0))
+        self._buttons['aware_left'].place(x=700, y=850, width=200, height=50)
+
+        self._buttons['aware_right'] = Button(self, text='aware_right')
+        self._buttons['aware_right'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 1))
+        self._buttons['aware_right'].place(x=900, y=850, width=200, height=50)
+
+        self._buttons['attack_left'] = Button(self, text='attack_left')
+        self._buttons['attack_left'].bind('<Button-1>', self.__click_shoot_button)
+        self._buttons['attack_left'].place(x=700, y=900, width=200, height=50)
+
+        self._buttons['attack_right'] = Button(self, text='attack_right')
+        self._buttons['attack_right'].bind('<Button-1>', self.__click_shoot_button)
+        self._buttons['attack_right'].place(x=900, y=900, width=200, height=50)
+
     def __create_chatbox(self):
         for id_, name in enumerate(['friend_bg', 'me_bg']):
             self._chatbox[name] = Text(self,
@@ -103,7 +120,7 @@ class _StartScreen(Frame):
                                        state=DISABLED,
                                        bg='black')
 
-            self._chatbox[name].place(x=1 + 1000 * id_, y=599, width=300, height=100)
+            self._chatbox[name].place(x=1 + 1000 * id_, y=609, width=300, height=90)
 
     def __click_shoot_button(self, event):
         self._controller.client.play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
@@ -111,6 +128,14 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].insert(END, 'fighting!\n')
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
+
+    def __click_aware_button(self, event, position):
+        self._controller.client.add_image('aware_left', 0, 0, posixpath.join(SIGNAL_PATH, 'aware.png'))
+        print('__click_aware_button')
+        # threading.Thread(target=self.after, args=(2000, self._remove_image('aware_left'))).start()
+
+    def _remove_image(self, keyword):
+        self._controller.client.remove_image(keyword)
 
     def _play_movie(self):
         self._show_frame(0)
@@ -129,4 +154,11 @@ class _StartScreen(Frame):
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
+        if who == 0:
+            for keyword, canvas_img in self._controller.client.canvas_img.items():
+                x = canvas_img[0]
+                y = canvas_img[1]
+                img_ = canvas_img[2]
+                self._images[keyword] = ImageTk.PhotoImage(image=img_)
+                self._canvas[name].create_image(x, y, image=self._images[keyword], anchor=NW)
         # self._canvas[name].create_text(0, 0, font=("helvetica", 50), text="fighting!", fill='white', anchor=NW)
