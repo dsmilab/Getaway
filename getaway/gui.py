@@ -145,6 +145,7 @@ class _StartScreen(Frame):
         self._show_frame(0)
         self._show_frame(1)
         self._show_camera()
+        self._controller.client.refresh()
         self.after(16, self._play_movie)
 
     def _show_camera(self):

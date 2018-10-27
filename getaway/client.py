@@ -20,14 +20,22 @@ class Client(object):
 
         threading.Thread(target=__os_system, args=(sound_path,)).start()
 
-    def add_image(self, keyword, x, y, filename):
+    def add_image(self, keyword, x, y, filename, timer=25):
         img = Image.open(filename).convert('RGBA')
         img = img.resize((100, 100), Image.ANTIALIAS)
-        print(img)
         self._canvas_img[keyword] = (x, y, img)
+        self._timer_count[keyword] = timer
 
     def remove_image(self, keyword):
         self._canvas_img.pop(keyword, None)
+
+    def refresh(self):
+        tmp_timer_count = self._timer_count.copy()
+        for keyword, val in tmp_timer_count.items():
+            self._timer_count[keyword] -= 1
+            if self._timer_count[keyword] == 0:
+                self._timer_count.pop(keyword, None)
+                self._canvas_img.pop(keyword, None)
 
     @property
     def canvas_img(self):
