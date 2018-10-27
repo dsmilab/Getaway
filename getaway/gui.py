@@ -96,14 +96,14 @@ class _StartScreen(Frame):
         files = sorted(glob('data/emoji/*.png'))
         for filename in files:
             img = Image.open(filename).convert('RGBA')
-            img = img.resize((50, 50), Image.ANTIALIAS)
+            img = img.resize((35, 35), Image.ANTIALIAS)
             res = re.search('\w*.png', filename).group(0)
             fname = res[:-4]
             self._images[fname] = ImageTk.PhotoImage(img)
 
         filename = posixpath.join(HUD_PATH, 'radar_map.png')
         img = Image.open(filename).convert('RGBA')
-        img = img.resize((100, 100), Image.ANTIALIAS)
+        img = img.resize((150, 150), Image.ANTIALIAS)
         self._images['radar_map'] = ImageTk.PhotoImage(img)
 
         filename = posixpath.join(HUD_PATH, 'hp.png')
@@ -111,6 +111,20 @@ class _StartScreen(Frame):
         img = img.resize((500, 50), Image.ANTIALIAS)
         self._images['hp'] = ImageTk.PhotoImage(img)
 
+        filename = posixpath.join(HUD_PATH, 'score.png')
+        img = Image.open(filename).convert('RGBA')
+        img = img.resize((500, 50), Image.ANTIALIAS)
+        self._images['score'] = ImageTk.PhotoImage(img)
+
+        filename = posixpath.join(HUD_PATH, 'team1.png')
+        img = Image.open(filename).convert('RGBA')
+        img = img.resize((150, 150), Image.ANTIALIAS)
+        self._images['team1'] = ImageTk.PhotoImage(img)
+
+        filename = posixpath.join(HUD_PATH, 'team2.png')
+        img = Image.open(filename).convert('RGBA')
+        img = img.resize((150, 150), Image.ANTIALIAS)
+        self._images['team2'] = ImageTk.PhotoImage(img)
         # self._canvas['friend_concentric'] = Canvas(self)
         # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
 
@@ -200,10 +214,6 @@ class _StartScreen(Frame):
         self._show_frame(1)
         self._show_camera()
         self.after(16, self._play_movie)
-    #
-    # def _play_camera(self):
-    #     self._show_camera()
-    #     self.after(16, self._play_camera)
 
     def _show_camera(self):
         self._canvas['camera'].delete('all')
@@ -217,7 +227,6 @@ class _StartScreen(Frame):
             self.__trigger_aware_event(1)
 
         img = Image.fromarray(cv2image).resize((400, 300))
-        # model.predict(img)
 
         self._images['camera'] = ImageTk.PhotoImage(image=img)
         self._canvas['camera'].create_image(0, 0, image=self._images['camera'], anchor=NW)
@@ -232,12 +241,16 @@ class _StartScreen(Frame):
 
         if who == 1:
             cv2image = geta_zoom(cv2image, 10)
+
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[who], anchor=CENTER)
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
+        self._canvas[name].create_image(400, 0, image=self._images['score'], anchor=N)
+        self._canvas[name].create_image(0, 250, image=self._images['team1'], anchor=NW)
+        self._canvas[name].create_image(800, 250, image=self._images['team2'], anchor=NE)
 
         if who == 0:
             for keyword, canvas_img in self._controller.clients[who].canvas_img.items():
@@ -248,15 +261,15 @@ class _StartScreen(Frame):
                 self._canvas[name].create_image(x, y, image=self._images[keyword], anchor=NW)
 
         for id_, avatar_key in enumerate(self._controller.clients[who].friend_avatars):
-            self._canvas[name].create_image(0, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
+            self._canvas[name].create_image(150 - 20, 300 + 35 * id_, image=self._images[avatar_key], anchor=E)
 
         for id_, avatar_name in enumerate(self._controller.clients[who].friend_names):
-            self._canvas[name].create_text(50, 220 + 50 * id_, font=("helvetica", 14),
-                                           text=avatar_name, fill='white', anchor=NW)
+            self._canvas[name].create_text(0 + 10, 300 + 35 * id_, font=("Times New Roman", 12, "bold"),
+                                           text=avatar_name, fill='skyblue', anchor=W)
 
         for id_, avatar_key in enumerate(self._controller.clients[who].enemy_avatars):
-            self._canvas[name].create_image(750, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
+            self._canvas[name].create_image(650 + 20, 300 + 35 * id_, image=self._images[avatar_key], anchor=W)
 
         for id_, avatar_name in enumerate(self._controller.clients[who].enemy_names):
-            self._canvas[name].create_text(750, 220 + 50 * id_, font=("helvetica", 14),
-                                           text=avatar_name, fill='white', anchor=NE)
+            self._canvas[name].create_text(800 - 10, 300 + 35 * id_, font=("Times New Roman", 12, "bold"),
+                                           text=avatar_name, fill='tomato', anchor=E)
