@@ -15,7 +15,7 @@ class GUI(Tk):
     def __init__(self, master=None):
         Tk.__init__(self, master)
         self.title('Getaway')
-        self.geometry('1800x1100')
+        self.geometry('1800x1000')
         self.resizable(width=False, height=False)
         self._clients = [Client('Hong'), Client('Ming')]
         self._screen = None
@@ -79,7 +79,7 @@ class _StartScreen(Frame):
         self._cap['me_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
 
         self._canvas['camera'] = Canvas(self)
-        self._canvas['camera'].place(x=1400, y=800, width=400, height=300)
+        self._canvas['camera'].place(x=1400, y=700, width=400, height=300)
 
         self.after(16, self._play_movie)
 
@@ -133,14 +133,6 @@ class _StartScreen(Frame):
         self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
         self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
 
-        self._buttons['attack_left'] = Button(self, text='attack_left')
-        self._buttons['attack_left'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 0))
-        self._buttons['attack_left'].place(x=700, y=900, width=200, height=50)
-
-        self._buttons['attack_right'] = Button(self, text='attack_right')
-        self._buttons['attack_right'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 1))
-        self._buttons['attack_right'].place(x=900, y=900, width=200, height=50)
-
     def __create_chatbox(self):
         for id_, name in enumerate(['friend_bg', 'me_bg']):
             self._chatbox[name] = Text(self,
@@ -180,10 +172,10 @@ class _StartScreen(Frame):
                                               120,
                                               alert_img_path)
 
-    def __click_attack_button(self, event, position):
+    def __trigger_attack_event(self, position):
         text_str = ['attack_left', 'attack_right']
         msg_str = ['left', 'right']
-        attack_img_path = posixpath.join(SIGNAL_PATH, 'attack.png')
+        attack_img_path = posixpath.join(SIGNAL_PATH, 'attack_' + msg_str[position] + '.png')
 
         self._chatbox['me_bg'].config(state=NORMAL)
         self._chatbox['me_bg'].insert(END, 'You asked team to attack ' + msg_str[position] + '!\n')
@@ -214,6 +206,8 @@ class _StartScreen(Frame):
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         cv2image = cv2.flip(cv2image, 1)
         pos = self._controller.clients[1].write_camera_image(cv2image)
+        sys.stdout.write('>> %s\n' % pos)
+        sys.stdout.flush()
         if pos == 'left':
             self.__trigger_alert_event(0)
         elif pos == 'right':
@@ -236,7 +230,7 @@ class _StartScreen(Frame):
 
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
-        self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
+        self._canvas[name].create_image(400, 300, image=self._images[name], anchor=CENTER)
         self._canvas[name].create_image(400, 300, image=self._concentric[who], anchor=CENTER)
 
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
