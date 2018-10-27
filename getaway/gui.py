@@ -8,8 +8,8 @@ from PIL import Image, ImageTk
 from glob import glob
 
 # ---------------------------------
-from getaway.camera import Camera
-from getaway.models import CNN
+from .camera import Camera
+# from .models import CNN
 # ---------------------------------
 
 
@@ -62,11 +62,10 @@ class _StartScreen(Frame):
         self._concentric = []
         self._images = {}
         self._buttons = {}
+        self._camera = Camera()
+        
         self.__init_screen()
-        # ---------------------------------
-        # create instance and open camera
-        self.camera = Camera()
-        # ---------------------------------
+
     def __init_screen(self):
         self.__create_movies()
         self.__create_images()
@@ -84,7 +83,6 @@ class _StartScreen(Frame):
 
         self._canvas['camera'] = Canvas(self)
         self._canvas['camera'].place(x=1400, y=800, width=400, height=300)
-        self._cap['camera'] = cv2.VideoCapture(0)
 
         self.after(16, self._play_movie)
 
@@ -172,9 +170,9 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].config(state=DISABLED)
 
         self._controller.clients[0].add_image(text_str[position],
-                                             position * 730,
-                                             120,
-                                             aware_img_path)
+                                              position * 730,
+                                              120,
+                                              aware_img_path)
 
     def __click_attack_button(self, event, position):
         text_str = ['attack_left', 'attack_right']
@@ -190,9 +188,9 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
 
         self._controller.clients[0].add_image(text_str[position],
-                                             position * 730,
-                                             120,
-                                             attack_img_path)
+                                              position * 730,
+                                              120,
+                                              attack_img_path)
 
     def _play_movie(self):
         for cli_ in self._controller.clients:
@@ -203,16 +201,12 @@ class _StartScreen(Frame):
         self.after(16, self._play_movie)
 
     def _show_camera(self):
-        # ---------------------------------
-
         self._canvas['camera'].delete('all')
 
-        ret, frame = self.camera.read()
-        # frame = cv2.flip(frame, 1)
+        ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         img = Image.fromarray(cv2image).resize((400, 300))
         # model.predict(img)
-        # ---------------------------------
 
         self._images['camera'] = ImageTk.PhotoImage(image=img)
         self._canvas['camera'].create_image(0, 0, image=self._images['camera'], anchor=NW)
