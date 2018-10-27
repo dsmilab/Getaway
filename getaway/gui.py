@@ -195,16 +195,23 @@ class _StartScreen(Frame):
     def _play_movie(self):
         for cli_ in self._controller.clients:
             cli_.refresh()
+
         self._show_frame(0)
         self._show_frame(1)
         self._show_camera()
         self.after(16, self._play_movie)
+    #
+    # def _play_camera(self):
+    #     self._show_camera()
+    #     self.after(16, self._play_camera)
 
     def _show_camera(self):
         self._canvas['camera'].delete('all')
 
         ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        self._controller.clients[1].write_camera_image(cv2image)
+
         img = Image.fromarray(cv2image).resize((400, 300))
         # model.predict(img)
 
