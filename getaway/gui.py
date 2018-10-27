@@ -2,6 +2,7 @@ from .config import *
 from .client import *
 from .image import *
 from tkinter import *
+import re
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
@@ -89,6 +90,14 @@ class _StartScreen(Frame):
             img = img.resize((100, 100), Image.ANTIALIAS)
             self._concentric.append(ImageTk.PhotoImage(img))
 
+        files = sorted(glob('data/emoji/*.png'))
+        for filename in files:
+            img = Image.open(filename).convert('RGBA')
+            img = img.resize((50, 50), Image.ANTIALIAS)
+            res = re.search('\w*.png', filename).group(0)
+            fname = res[:-4]
+            self._images[fname] = ImageTk.PhotoImage(img)
+
         filename = posixpath.join(HUD_PATH, 'radar_map.png')
         img = Image.open(filename).convert('RGBA')
         img = img.resize((100, 100), Image.ANTIALIAS)
@@ -158,8 +167,8 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].config(state=DISABLED)
 
         self._controller.client.add_image(text_str[position],
-                                          position * 700,
-                                          50,
+                                          position * 730,
+                                          120,
                                           aware_img_path)
 
     def __click_attack_button(self, event, position):
@@ -174,9 +183,10 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].config(state=NORMAL)
         self._chatbox['friend_bg'].insert(END, 'Ming asked You to attack ' + msg_str[position] + '!\n')
         self._chatbox['friend_bg'].see(END)
+
         self._controller.client.add_image(text_str[position],
-                                          position * 700,
-                                          50,
+                                          position * 730,
+                                          120,
                                           attack_img_path)
 
     def _play_movie(self):
@@ -201,6 +211,7 @@ class _StartScreen(Frame):
 
         ret, frame = self._cap[name].read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+
         if who == 1:
             cv2image = geta_zoom(cv2image, 10)
         img = Image.fromarray(cv2image).resize((800, 600))
@@ -209,6 +220,7 @@ class _StartScreen(Frame):
         self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
+
         if who == 0:
             for keyword, canvas_img in self._controller.client.canvas_img.items():
                 x = canvas_img[0]
@@ -216,4 +228,17 @@ class _StartScreen(Frame):
                 img_ = canvas_img[2]
                 self._images[keyword] = ImageTk.PhotoImage(image=img_)
                 self._canvas[name].create_image(x, y, image=self._images[keyword], anchor=NW)
-        # self._canvas[name].create_text(0, 0, font=("helvetica", 50), text="fighting!", fill='white', anchor=NW)
+
+        for id_, avatar_key in enumerate(self._controller.client.friend_avatars):
+            self._canvas[name].create_image(0, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
+
+        for id_, avatar_name in enumerate(self._controller.client.friend_names):
+            self._canvas[name].create_text(50, 220 + 50 * id_, font=("helvetica", 14),
+                                           text=avatar_name, fill='white', anchor=NW)
+
+        for id_, avatar_key in enumerate(self._controller.client.enemy_avatars):
+            self._canvas[name].create_image(750, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
+
+        for id_, avatar_name in enumerate(self._controller.client.enemy_names):
+            self._canvas[name].create_text(750, 220 + 50 * id_, font=("helvetica", 14),
+                                           text=avatar_name, fill='white', anchor=NE)

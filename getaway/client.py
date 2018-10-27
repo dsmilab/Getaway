@@ -12,6 +12,11 @@ class Client(object):
     def __init__(self):
         self._canvas_img = {}
         self._timer_count = {}
+        self._friend_avatars = ['neutral', 'neutral', 'neutral']
+        self._enemy_avatars = ['neutral', 'neutral', 'neutral']
+
+        self._friend_names = ['Ming', 'Hong', 'Thai']
+        self._enemy_names = ['Liquid', 'NRG', 'Gas']
 
     @staticmethod
     def play_sound(sound_path):
@@ -22,7 +27,7 @@ class Client(object):
 
     def add_image(self, keyword, x, y, filename, timer=25):
         img = Image.open(filename).convert('RGBA')
-        img = img.resize((100, 100), Image.ANTIALIAS)
+        img = img.resize((70, 70), Image.ANTIALIAS)
         self._canvas_img[keyword] = (x, y, img)
         self._timer_count[keyword] = timer
 
@@ -40,3 +45,19 @@ class Client(object):
     @property
     def canvas_img(self):
         return self._canvas_img
+
+    @property
+    def friend_avatars(self):
+        return self._friend_avatars
+
+    @property
+    def enemy_avatars(self):
+        return self._enemy_avatars
+
+    @property
+    def friend_names(self):
+        return self._friend_names
+
+    @property
+    def enemy_names(self):
+        return self._enemy_names
