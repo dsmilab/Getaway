@@ -76,6 +76,10 @@ class _StartScreen(Frame):
         self._canvas['me_bg'].place(x=1000, y=100, width=800, height=600)
         self._cap['me_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
 
+        self._canvas['camera'] = Canvas(self)
+        self._canvas['camera'].place(x=1400, y=800, width=400, height=300)
+        self._cap['camera'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
+
         self.after(16, self._play_movie)
 
     def __create_concentric(self):
@@ -140,7 +144,17 @@ class _StartScreen(Frame):
     def _play_movie(self):
         self._show_frame(0)
         self._show_frame(1)
+        self._show_camera()
         self.after(16, self._play_movie)
+
+    def _show_camera(self):
+        self._canvas['camera'].delete('all')
+        ret, frame = self._cap['camera'].read()
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img = Image.fromarray(cv2image).resize((400, 300))
+        self._images['camera'] = ImageTk.PhotoImage(image=img)
+        self._canvas['camera'].create_image(0, 0, image=self._images['camera'], anchor=NW)
+        self._canvas['camera'].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
 
     def _show_frame(self, who):
         name = 'friend_bg' if who == 0 else 'me_bg'
