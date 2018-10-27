@@ -1,4 +1,6 @@
 from .config import *
+from .activity import *
+from .info import *
 import threading
 import posixpath
 import os
@@ -12,11 +14,10 @@ class Client(object):
     def __init__(self, player_name):
         self._canvas_img = {}
         self._timer_count = {}
-        self._friend_avatars = ['neutral', 'neutral', 'neutral']
-        self._enemy_avatars = ['neutral', 'neutral', 'neutral']
 
-        self._friend_names = ['Ming', 'Hong', 'Thai']
-        self._enemy_names = ['Liquid', 'NRG', 'Gas']
+        self._act = Activity()
+        self._player_name = player_name
+        self._player_info = Info()
 
     @staticmethod
     def play_sound(sound_path):
@@ -25,14 +26,19 @@ class Client(object):
 
         threading.Thread(target=__os_system, args=(sound_path,)).start()
 
-    def add_image(self, keyword, x, y, filename, timer=25):
+    def add_image(self, keyword, x, y, filename, timer=5):
         img = Image.open(filename).convert('RGBA')
-        img = img.resize((70, 70), Image.ANTIALIAS)
+        img = img.resize((200, 200), Image.ANTIALIAS)
         self._canvas_img[keyword] = (x, y, img)
         self._timer_count[keyword] = timer
 
     def remove_image(self, keyword):
         self._canvas_img.pop(keyword, None)
+
+    def write_camera_image(self, img):
+        emoji, pos = self._act.read_pos_emoji(img)
+        self._player_info.set_friend_avatars(self._player_name, emoji)
+        return pos
 
     def refresh(self):
         tmp_timer_count = self._timer_count.copy()
@@ -48,16 +54,16 @@ class Client(object):
 
     @property
     def friend_avatars(self):
-        return self._friend_avatars
+        return self._player_info.friend_avatars
 
     @property
     def enemy_avatars(self):
-        return self._enemy_avatars
+        return self._player_info.enemy_avatars
 
     @property
     def friend_names(self):
-        return self._friend_names
+        return self._player_info.friend_names
 
     @property
     def enemy_names(self):
-        return self._enemy_names
+        return self._player_info.enemy_names
