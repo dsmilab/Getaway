@@ -6,9 +6,11 @@ import re
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
-import threading
-from tkinter.scrolledtext import ScrolledText
-import tkinter.font as tkFont
+
+# ---------------------------------
+from getaway.camera import Camera
+from getaway.models import CNN
+# ---------------------------------
 
 
 class GUI(Tk):
@@ -61,7 +63,10 @@ class _StartScreen(Frame):
         self._images = {}
         self._buttons = {}
         self.__init_screen()
-
+        # ---------------------------------
+        # create instance and open camera
+        self.camera = Camera()
+        # ---------------------------------
     def __init_screen(self):
         self.__create_movies()
         self.__create_images()
@@ -198,10 +203,17 @@ class _StartScreen(Frame):
         self.after(16, self._play_movie)
 
     def _show_camera(self):
+        # ---------------------------------
+
         self._canvas['camera'].delete('all')
-        ret, frame = self._cap['camera'].read()
+
+        ret, frame = self.camera.read()
+        # frame = cv2.flip(frame, 1)
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         img = Image.fromarray(cv2image).resize((400, 300))
+        # model.predict(img)
+        # ---------------------------------
+
         self._images['camera'] = ImageTk.PhotoImage(image=img)
         self._canvas['camera'].create_image(0, 0, image=self._images['camera'], anchor=NW)
         self._canvas['camera'].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
