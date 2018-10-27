@@ -18,7 +18,7 @@ class GUI(Tk):
         self.title('Getaway')
         self.geometry('1800x1100')
         self.resizable(width=False, height=False)
-        self._client = Client()
+        self._clients = [Client('Hong'), Client('Ming')]
         self._screen = None
 
         self.__init_window()
@@ -43,8 +43,8 @@ class GUI(Tk):
         self._screen.tkraise()
 
     @property
-    def client(self):
-        return self._client
+    def clients(self):
+        return self._clients
 
 
 class _StartScreen(Frame):
@@ -79,7 +79,7 @@ class _StartScreen(Frame):
 
         self._canvas['camera'] = Canvas(self)
         self._canvas['camera'].place(x=1400, y=800, width=400, height=300)
-        self._cap['camera'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
+        self._cap['camera'] = cv2.VideoCapture(0)
 
         self.after(16, self._play_movie)
 
@@ -146,7 +146,7 @@ class _StartScreen(Frame):
             self._chatbox[name].place(x=1 + 1000 * id_, y=629, width=320, height=70)
 
     def __click_shoot_button(self, event):
-        self._controller.client.play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
+        self._controller.clients[1].play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
         self._chatbox['friend_bg'].config(state=NORMAL)
         self._chatbox['friend_bg'].insert(END, 'fighting!\n')
         self._chatbox['friend_bg'].see(END)
@@ -166,10 +166,10 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
 
-        self._controller.client.add_image(text_str[position],
-                                          position * 730,
-                                          120,
-                                          aware_img_path)
+        self._controller.clients[0].add_image(text_str[position],
+                                             position * 730,
+                                             120,
+                                             aware_img_path)
 
     def __click_attack_button(self, event, position):
         text_str = ['attack_left', 'attack_right']
@@ -184,13 +184,14 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].insert(END, 'Ming asked You to attack ' + msg_str[position] + '!\n')
         self._chatbox['friend_bg'].see(END)
 
-        self._controller.client.add_image(text_str[position],
-                                          position * 730,
-                                          120,
-                                          attack_img_path)
+        self._controller.clients[0].add_image(text_str[position],
+                                             position * 730,
+                                             120,
+                                             attack_img_path)
 
     def _play_movie(self):
-        self._controller.client.refresh()
+        for cli_ in self._controller.clients:
+            cli_.refresh()
         self._show_frame(0)
         self._show_frame(1)
         self._show_camera()
@@ -222,23 +223,23 @@ class _StartScreen(Frame):
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
 
         if who == 0:
-            for keyword, canvas_img in self._controller.client.canvas_img.items():
+            for keyword, canvas_img in self._controller.clients[who].canvas_img.items():
                 x = canvas_img[0]
                 y = canvas_img[1]
                 img_ = canvas_img[2]
                 self._images[keyword] = ImageTk.PhotoImage(image=img_)
                 self._canvas[name].create_image(x, y, image=self._images[keyword], anchor=NW)
 
-        for id_, avatar_key in enumerate(self._controller.client.friend_avatars):
+        for id_, avatar_key in enumerate(self._controller.clients[who].friend_avatars):
             self._canvas[name].create_image(0, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
 
-        for id_, avatar_name in enumerate(self._controller.client.friend_names):
+        for id_, avatar_name in enumerate(self._controller.clients[who].friend_names):
             self._canvas[name].create_text(50, 220 + 50 * id_, font=("helvetica", 14),
                                            text=avatar_name, fill='white', anchor=NW)
 
-        for id_, avatar_key in enumerate(self._controller.client.enemy_avatars):
+        for id_, avatar_key in enumerate(self._controller.clients[who].enemy_avatars):
             self._canvas[name].create_image(750, 200 + 50 * id_, image=self._images[avatar_key], anchor=NW)
 
-        for id_, avatar_name in enumerate(self._controller.client.enemy_names):
+        for id_, avatar_name in enumerate(self._controller.clients[who].enemy_names):
             self._canvas[name].create_text(750, 220 + 50 * id_, font=("helvetica", 14),
                                            text=avatar_name, fill='white', anchor=NE)

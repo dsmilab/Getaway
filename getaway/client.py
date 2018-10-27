@@ -9,7 +9,7 @@ __all__ = ['Client']
 
 class Client(object):
 
-    def __init__(self):
+    def __init__(self, player_name):
         self._canvas_img = {}
         self._timer_count = {}
         self._friend_avatars = ['neutral', 'neutral', 'neutral']
