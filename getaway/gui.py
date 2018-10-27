@@ -119,13 +119,13 @@ class _StartScreen(Frame):
         self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
         self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
 
-        self._buttons['aware_left'] = Button(self, text='aware_left')
-        self._buttons['aware_left'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 0))
-        self._buttons['aware_left'].place(x=700, y=850, width=200, height=50)
-
-        self._buttons['aware_right'] = Button(self, text='aware_right')
-        self._buttons['aware_right'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 1))
-        self._buttons['aware_right'].place(x=900, y=850, width=200, height=50)
+        # self._buttons['aware_left'] = Button(self, text='aware_left')
+        # self._buttons['aware_left'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 0))
+        # self._buttons['aware_left'].place(x=700, y=850, width=200, height=50)
+        #
+        # self._buttons['aware_right'] = Button(self, text='aware_right')
+        # self._buttons['aware_right'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 1))
+        # self._buttons['aware_right'].place(x=900, y=850, width=200, height=50)
 
         self._buttons['attack_left'] = Button(self, text='attack_left')
         self._buttons['attack_left'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 0))
@@ -155,7 +155,7 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
 
-    def __click_aware_button(self, event, position):
+    def __trigger_aware_event(self, position):
         text_str = ['aware_left', 'aware_right']
         msg_str = ['left', 'right']
         aware_img_path = posixpath.join(SIGNAL_PATH, 'aware.png')
@@ -210,7 +210,11 @@ class _StartScreen(Frame):
 
         ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        self._controller.clients[1].write_camera_image(cv2image)
+        pos = self._controller.clients[1].write_camera_image(cv2image)
+        if pos == 'left':
+            self.__trigger_aware_event(0)
+        elif pos == 'right':
+            self.__trigger_aware_event(1)
 
         img = Image.fromarray(cv2image).resize((400, 300))
         # model.predict(img)
@@ -231,7 +235,7 @@ class _StartScreen(Frame):
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
-        self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
+        self._canvas[name].create_image(400, 300, image=self._concentric[who], anchor=CENTER)
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
 

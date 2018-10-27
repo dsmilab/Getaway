@@ -49,6 +49,7 @@ class Activity(object):
             gray_face = np.expand_dims(gray_face, -1)
             if gray_face.shape[0] == 0 or gray_face.shape[1] == 0:
                 continue
+
             emotion_prediction = self._emotion_classifier.predict(gray_face)
             emotion_label_arg = int(np.argmax(emotion_prediction))
 
@@ -57,14 +58,13 @@ class Activity(object):
         else:
             emo = emoji[emotion_label_arg]
 
-        # image_compress = cv2.resize(image, (360, 240),
-        #                             interpolation=cv2.INTER_CUBIC)
-        # image_compress = cv2.flip(image_compress, 1)
-        # image_compress = cv2.cvtColor(image_compress, cv2.COLOR_BGR2GRAY)
-        # image_compress = np.reshape(image_compress, (-1, 360, 240, 1))
-        #
-        # y = self._cnn_model.predict(image_compress)
-        # pos = position[int(np.argmax(y))]
+        image_compress = cv2.resize(image, (80, 60),
+                                    interpolation=cv2.INTER_CUBIC)
+        image_compress = cv2.flip(image_compress, 1)
+        image_compress = cv2.cvtColor(image_compress, cv2.COLOR_BGR2GRAY)
+        image_compress = np.reshape(image_compress, (-1, 60, 80, 1))
 
-        pos = None
+        y = self._cnn_model.predict(image_compress)
+        pos = position[int(np.argmax(y))]
+
         return emo, pos

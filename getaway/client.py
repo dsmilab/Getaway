@@ -38,6 +38,7 @@ class Client(object):
     def write_camera_image(self, img):
         emoji, pos = self._act.read_pos_emoji(img)
         self._player_info.set_friend_avatars(self._player_name, emoji)
+        return pos
 
     def refresh(self):
         tmp_timer_count = self._timer_count.copy()
