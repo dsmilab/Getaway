@@ -1,5 +1,6 @@
 from .config import *
 from .client import *
+from .image import *
 from tkinter import *
 import cv2
 from PIL import Image, ImageTk
@@ -68,11 +69,11 @@ class _StartScreen(Frame):
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
         self._canvas['friend_bg'].place(x=0, y=100, width=800, height=600)
-        self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181025_210601.mp4')
+        self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
 
         self._canvas['me_bg'] = Canvas(self)
         self._canvas['me_bg'].place(x=1000, y=100, width=800, height=600)
-        self._cap['me_bg'] = cv2.VideoCapture('data/map/20181025_211153.mp4')
+        self._cap['me_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
 
         self.after(16, self._play_movie)
 
@@ -122,7 +123,10 @@ class _StartScreen(Frame):
 
         ret, frame = self._cap[name].read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        if who == 0:
+            cv2image = geta_zoom(cv2image, 10)
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
+        # self._canvas[name].create_text(0, 0, font=("helvetica", 50), text="fighting!", fill='white', anchor=NW)

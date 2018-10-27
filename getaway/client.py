@@ -11,7 +11,8 @@ class Client(object):
     def __init__(self):
         pass
 
-    def play_sound(self, sound_path):
+    @staticmethod
+    def play_sound(sound_path):
         def __os_system(sound_path_):
             os.system('play ' + sound_path_)
 
