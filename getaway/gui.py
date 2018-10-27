@@ -106,11 +106,11 @@ class _StartScreen(Frame):
         self._buttons['aware_right'].place(x=900, y=850, width=200, height=50)
 
         self._buttons['attack_left'] = Button(self, text='attack_left')
-        self._buttons['attack_left'].bind('<Button-1>', self.__click_shoot_button)
+        self._buttons['attack_left'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 0))
         self._buttons['attack_left'].place(x=700, y=900, width=200, height=50)
 
         self._buttons['attack_right'] = Button(self, text='attack_right')
-        self._buttons['attack_right'].bind('<Button-1>', self.__click_shoot_button)
+        self._buttons['attack_right'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 1))
         self._buttons['attack_right'].place(x=900, y=900, width=200, height=50)
 
     def __create_chatbox(self):
@@ -119,12 +119,12 @@ class _StartScreen(Frame):
                                        wrap=WORD,
                                        highlightbackground='black',
                                        border=0,
-                                       font=("helvetica", 18),
+                                       font=("helvetica", 16),
                                        fg='white',
                                        state=DISABLED,
                                        bg='black')
 
-            self._chatbox[name].place(x=1 + 1000 * id_, y=609, width=300, height=90)
+            self._chatbox[name].place(x=1 + 1000 * id_, y=629, width=320, height=70)
 
     def __click_shoot_button(self, event):
         self._controller.client.play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
@@ -134,18 +134,46 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].config(state=DISABLED)
 
     def __click_aware_button(self, event, position):
-        self._controller.client.add_image('aware_left', 0, 0, posixpath.join(SIGNAL_PATH, 'aware.png'))
-        print('__click_aware_button')
-        # threading.Thread(target=self.after, args=(2000, self._remove_image('aware_left'))).start()
+        text_str = ['aware_left', 'aware_right']
+        msg_str = ['left', 'right']
+        aware_img_path = posixpath.join(SIGNAL_PATH, 'aware.png')
 
-    def _remove_image(self, keyword):
-        self._controller.client.remove_image(keyword)
+        self._chatbox['me_bg'].config(state=NORMAL)
+        self._chatbox['me_bg'].insert(END, 'You asked team to aware ' + msg_str[position] + '!\n')
+        self._chatbox['me_bg'].see(END)
+
+        self._chatbox['friend_bg'].config(state=NORMAL)
+        self._chatbox['friend_bg'].insert(END, 'Ming asked You to aware ' + msg_str[position] + '!\n')
+        self._chatbox['friend_bg'].see(END)
+        self._chatbox['friend_bg'].config(state=DISABLED)
+
+        self._controller.client.add_image(text_str[position],
+                                          position * 700,
+                                          50,
+                                          aware_img_path)
+
+    def __click_attack_button(self, event, position):
+        text_str = ['attack_left', 'attack_right']
+        msg_str = ['left', 'right']
+        attack_img_path = posixpath.join(SIGNAL_PATH, 'attack.png')
+
+        self._chatbox['me_bg'].config(state=NORMAL)
+        self._chatbox['me_bg'].insert(END, 'You asked team to attack ' + msg_str[position] + '!\n')
+        self._chatbox['me_bg'].see(END)
+
+        self._chatbox['friend_bg'].config(state=NORMAL)
+        self._chatbox['friend_bg'].insert(END, 'Ming asked You to attack ' + msg_str[position] + '!\n')
+        self._chatbox['friend_bg'].see(END)
+        self._controller.client.add_image(text_str[position],
+                                          position * 700,
+                                          50,
+                                          attack_img_path)
 
     def _play_movie(self):
+        self._controller.client.refresh()
         self._show_frame(0)
         self._show_frame(1)
         self._show_camera()
-        self._controller.client.refresh()
         self.after(16, self._play_movie)
 
     def _show_camera(self):
@@ -163,7 +191,7 @@ class _StartScreen(Frame):
 
         ret, frame = self._cap[name].read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        if who == 0:
+        if who == 1:
             cv2image = geta_zoom(cv2image, 10)
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
