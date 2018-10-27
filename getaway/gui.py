@@ -2,15 +2,12 @@ from .config import *
 from .client import *
 from .image import *
 from tkinter import *
+from .camera import Camera
+
 import re
 import cv2
 from PIL import Image, ImageTk
 from glob import glob
-
-# ---------------------------------
-from .camera import Camera
-# from .models import CNN
-# ---------------------------------
 
 
 class GUI(Tk):
@@ -75,7 +72,7 @@ class _StartScreen(Frame):
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
         self._canvas['friend_bg'].place(x=0, y=100, width=800, height=600)
-        self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
+        self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181027_075601.mp4')
 
         self._canvas['me_bg'] = Canvas(self)
         self._canvas['me_bg'].place(x=1000, y=100, width=800, height=600)
@@ -90,7 +87,10 @@ class _StartScreen(Frame):
         files = sorted(glob('data/concentric/*.png'))
         for filename in files:
             img = Image.open(filename).convert('RGBA')
-            img = img.resize((100, 100), Image.ANTIALIAS)
+            res = re.search('\w*.png', filename).group(0)
+            fname = res[:-4]
+            if fname != 'concentric_02':
+                img = img.resize((100, 100), Image.ANTIALIAS)
             self._concentric.append(ImageTk.PhotoImage(img))
 
         files = sorted(glob('data/emoji/*.png'))
@@ -113,7 +113,7 @@ class _StartScreen(Frame):
 
         filename = posixpath.join(HUD_PATH, 'score.png')
         img = Image.open(filename).convert('RGBA')
-        img = img.resize((500, 50), Image.ANTIALIAS)
+        img = img.resize((400, 50), Image.ANTIALIAS)
         self._images['score'] = ImageTk.PhotoImage(img)
 
         filename = posixpath.join(HUD_PATH, 'team1.png')
@@ -132,14 +132,6 @@ class _StartScreen(Frame):
         self._buttons['shoot'] = Button(self, text='shoot')
         self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
         self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
-
-        # self._buttons['aware_left'] = Button(self, text='aware_left')
-        # self._buttons['aware_left'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 0))
-        # self._buttons['aware_left'].place(x=700, y=850, width=200, height=50)
-        #
-        # self._buttons['aware_right'] = Button(self, text='aware_right')
-        # self._buttons['aware_right'].bind('<Button-1>', lambda event: self.__click_aware_button(event, 1))
-        # self._buttons['aware_right'].place(x=900, y=850, width=200, height=50)
 
         self._buttons['attack_left'] = Button(self, text='attack_left')
         self._buttons['attack_left'].bind('<Button-1>', lambda event: self.__click_attack_button(event, 0))
@@ -169,24 +161,24 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
 
-    def __trigger_aware_event(self, position):
-        text_str = ['aware_left', 'aware_right']
+    def __trigger_alert_event(self, position):
+        text_str = ['alert_left', 'alert_right']
         msg_str = ['left', 'right']
-        aware_img_path = posixpath.join(SIGNAL_PATH, 'aware.png')
+        alert_img_path = posixpath.join(SIGNAL_PATH, 'alert_' + msg_str[position] + '.png')
 
         self._chatbox['me_bg'].config(state=NORMAL)
-        self._chatbox['me_bg'].insert(END, 'You asked team to aware ' + msg_str[position] + '!\n')
+        self._chatbox['me_bg'].insert(END, 'You asked team to alert ' + msg_str[position] + '!\n')
         self._chatbox['me_bg'].see(END)
 
         self._chatbox['friend_bg'].config(state=NORMAL)
-        self._chatbox['friend_bg'].insert(END, 'Ming asked You to aware ' + msg_str[position] + '!\n')
+        self._chatbox['friend_bg'].insert(END, 'Ming asked You to alert ' + msg_str[position] + '!\n')
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
 
         self._controller.clients[0].add_image(text_str[position],
-                                              position * 730,
+                                              position * 600,
                                               120,
-                                              aware_img_path)
+                                              alert_img_path)
 
     def __click_attack_button(self, event, position):
         text_str = ['attack_left', 'attack_right']
@@ -202,7 +194,7 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
 
         self._controller.clients[0].add_image(text_str[position],
-                                              position * 730,
+                                              position * 600,
                                               120,
                                               attack_img_path)
 
@@ -220,17 +212,17 @@ class _StartScreen(Frame):
 
         ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        cv2image = cv2.flip(cv2image, 1)
         pos = self._controller.clients[1].write_camera_image(cv2image)
         if pos == 'left':
-            self.__trigger_aware_event(0)
+            self.__trigger_alert_event(0)
         elif pos == 'right':
-            self.__trigger_aware_event(1)
+            self.__trigger_alert_event(1)
 
         img = Image.fromarray(cv2image).resize((400, 300))
 
         self._images['camera'] = ImageTk.PhotoImage(image=img)
         self._canvas['camera'].create_image(0, 0, image=self._images['camera'], anchor=NW)
-        self._canvas['camera'].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
 
     def _show_frame(self, who):
         name = 'friend_bg' if who == 0 else 'me_bg'
@@ -246,6 +238,7 @@ class _StartScreen(Frame):
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[who], anchor=CENTER)
+
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
         self._canvas[name].create_image(400, 0, image=self._images['score'], anchor=N)
