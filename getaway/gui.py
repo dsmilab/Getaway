@@ -63,7 +63,7 @@ class _StartScreen(Frame):
 
     def __init_screen(self):
         self.__create_movies()
-        self.__create_concentric()
+        self.__create_images()
         self.__create_buttons()
         self.__create_chatbox()
 
@@ -82,12 +82,22 @@ class _StartScreen(Frame):
 
         self.after(16, self._play_movie)
 
-    def __create_concentric(self):
+    def __create_images(self):
         files = sorted(glob('data/concentric/*.png'))
         for filename in files:
             img = Image.open(filename).convert('RGBA')
             img = img.resize((100, 100), Image.ANTIALIAS)
             self._concentric.append(ImageTk.PhotoImage(img))
+
+        filename = posixpath.join(HUD_PATH, 'radar_map.png')
+        img = Image.open(filename).convert('RGBA')
+        img = img.resize((100, 100), Image.ANTIALIAS)
+        self._images['radar_map'] = ImageTk.PhotoImage(img)
+
+        filename = posixpath.join(HUD_PATH, 'hp.png')
+        img = Image.open(filename).convert('RGBA')
+        img = img.resize((500, 50), Image.ANTIALIAS)
+        self._images['hp'] = ImageTk.PhotoImage(img)
 
         # self._canvas['friend_concentric'] = Canvas(self)
         # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
@@ -197,6 +207,8 @@ class _StartScreen(Frame):
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(0, 0, image=self._images[name], anchor=NW)
         self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
+        self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
+        self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
         if who == 0:
             for keyword, canvas_img in self._controller.client.canvas_img.items():
                 x = canvas_img[0]
