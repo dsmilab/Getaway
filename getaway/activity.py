@@ -24,7 +24,7 @@ class Activity(object):
         self._emotion_classifier = load_model(emotion_model_path, compile=False)
 
     def read_pos_emoji(self, image):
-        position = ['none', 'left', 'right']
+        position = ['none', 'turn_left', 'turn_right', 'forward', 'down_left', 'down_right']
         emoji = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 
         emotion_target_size = self._emotion_classifier.input_shape[1:3]
@@ -40,18 +40,17 @@ class Activity(object):
             gray_face = gray_image[y1:y2, x1:x2]
             try:
                 gray_face = cv2.resize(gray_face, emotion_target_size)
+                gray_face = preprocess_input(gray_face, True)
+                gray_face = np.expand_dims(gray_face, 0)
+                gray_face = np.expand_dims(gray_face, -1)
+                if gray_face.shape[0] == 0 or gray_face.shape[1] == 0:
+                    continue
+
+                emotion_prediction = self._emotion_classifier.predict(gray_face)
+                emotion_label_arg = int(np.argmax(emotion_prediction))
             except Exception as e:
                 sys.stderr.write(str(e))
                 sys.stderr.flush()
-
-            gray_face = preprocess_input(gray_face, True)
-            gray_face = np.expand_dims(gray_face, 0)
-            gray_face = np.expand_dims(gray_face, -1)
-            if gray_face.shape[0] == 0 or gray_face.shape[1] == 0:
-                continue
-
-            emotion_prediction = self._emotion_classifier.predict(gray_face)
-            emotion_label_arg = int(np.argmax(emotion_prediction))
 
         if len(faces) == 0 or emotion_label_arg is None:
             emo = 'none'
@@ -62,7 +61,7 @@ class Activity(object):
                                     interpolation=cv2.INTER_CUBIC)
         image_compress = cv2.flip(image_compress, 1)
         image_compress = cv2.cvtColor(image_compress, cv2.COLOR_BGR2GRAY)
-        image_compress = np.reshape(image_compress, (-1, 60, 80, 1))
+        image_compress = np.reshape(image_compress, (-1, 60, 80, 1)) / 255.0
 
         y = self._cnn_model.predict(image_compress)
         pos = position[int(np.argmax(y))]

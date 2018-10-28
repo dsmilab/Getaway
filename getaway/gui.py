@@ -101,6 +101,15 @@ class _StartScreen(Frame):
             fname = res[:-4]
             self._images[fname] = ImageTk.PhotoImage(img)
 
+        files = sorted(glob('data/gun_walk/*.png'))
+        for filename in files:
+            img = Image.open(filename).convert('RGBA')
+            img = img.resize((500, 200), Image.ANTIALIAS)
+            res = re.search('\w*.png', filename).group(0)
+            fname = res[:-4]
+            print(fname)
+            self._images[fname] = ImageTk.PhotoImage(img)
+
         filename = posixpath.join(HUD_PATH, 'radar_map.png')
         img = Image.open(filename).convert('RGBA')
         img = img.resize((150, 150), Image.ANTIALIAS)
@@ -153,7 +162,7 @@ class _StartScreen(Frame):
         self._chatbox['friend_bg'].see(END)
         self._chatbox['friend_bg'].config(state=DISABLED)
 
-    def __trigger_alert_event(self, position):
+    def __trigger_alert_event(self, position, timer=5):
         text_str = ['alert_left', 'alert_right']
         msg_str = ['left', 'right']
         alert_img_path = posixpath.join(SIGNAL_PATH, 'alert_' + msg_str[position] + '.png')
@@ -170,9 +179,10 @@ class _StartScreen(Frame):
         self._controller.clients[0].add_image(text_str[position],
                                               position * 600,
                                               120,
-                                              alert_img_path)
+                                              alert_img_path,
+                                              timer)
 
-    def __trigger_attack_event(self, position):
+    def __trigger_attack_event(self, position, timer=5):
         text_str = ['attack_left', 'attack_right']
         msg_str = ['left', 'right']
         attack_img_path = posixpath.join(SIGNAL_PATH, 'attack_' + msg_str[position] + '.png')
@@ -188,7 +198,8 @@ class _StartScreen(Frame):
         self._controller.clients[0].add_image(text_str[position],
                                               position * 600,
                                               120,
-                                              attack_img_path)
+                                              attack_img_path,
+                                              timer)
 
     def _play_movie(self):
         for cli_ in self._controller.clients:
@@ -204,14 +215,19 @@ class _StartScreen(Frame):
 
         ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        cv2image = cv2.flip(cv2image, 1)
-        pos = self._controller.clients[1].write_camera_image(cv2image)
+        # cv2image = cv2.flip(cv2image, 1)
+        self._controller.clients[1].write_camera_image(cv2image)
+        pos = self._controller.clients[1].query_pos()
         sys.stdout.write('>> %s\n' % pos)
         sys.stdout.flush()
-        if pos == 'left':
+        if pos == 'turn_left':
             self.__trigger_alert_event(0)
-        elif pos == 'right':
+        elif pos == 'turn_right':
             self.__trigger_alert_event(1)
+        elif pos == 'down_left':
+            self.__trigger_attack_event(0, 25)
+        elif pos == 'down_right':
+            self.__trigger_attack_event(1, 25)
 
         img = Image.fromarray(cv2image).resize((400, 300))
 
@@ -225,13 +241,20 @@ class _StartScreen(Frame):
         ret, frame = self._cap[name].read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
 
-        if who == 1:
+        if self._controller.clients[who].zoom_mode:
             cv2image = geta_zoom(cv2image, 10)
 
         img = Image.fromarray(cv2image).resize((800, 600))
         self._images[name] = ImageTk.PhotoImage(image=img)
         self._canvas[name].create_image(400, 300, image=self._images[name], anchor=CENTER)
-        self._canvas[name].create_image(400, 300, image=self._concentric[who], anchor=CENTER)
+
+        if self._controller.clients[who].zoom_mode:
+            self._canvas[name].create_image(400, 300, image=self._concentric[1], anchor=CENTER)
+        else:
+            gun_walk_keyword = '%02d' % self._controller.clients[who].gun_walk_loop_id
+            self._canvas[name].create_image(300, 400, image=self._images[gun_walk_keyword], anchor=NW)
+            self._canvas[name].create_image(400, 300, image=self._concentric[0], anchor=CENTER)
+
 
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
