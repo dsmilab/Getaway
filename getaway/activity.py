@@ -43,8 +43,6 @@ class Activity(object):
                 gray_face = preprocess_input(gray_face, True)
                 gray_face = np.expand_dims(gray_face, 0)
                 gray_face = np.expand_dims(gray_face, -1)
-                if gray_face.shape[0] == 0 or gray_face.shape[1] == 0:
-                    continue
 
                 emotion_prediction = self._emotion_classifier.predict(gray_face)
                 emotion_label_arg = int(np.argmax(emotion_prediction))

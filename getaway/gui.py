@@ -64,10 +64,22 @@ class _StartScreen(Frame):
         self.__init_screen()
 
     def __init_screen(self):
+        self.__create_background()
         self.__create_movies()
         self.__create_images()
         self.__create_buttons()
         self.__create_chatbox()
+
+    def __create_background(self):
+        # self._canvas['bg'] = Canvas(self)
+        #
+        # self._canvas['bg'].place(x=0, y=0, width=1800, height=1000)
+        filename = posixpath.join(HUD_PATH, 'bg.png')
+        self._bg_image = PhotoImage(file=filename)
+        background_label = Label(self, image=self._bg_image)
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # self._canvas['bg'].pack()
 
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
@@ -107,7 +119,6 @@ class _StartScreen(Frame):
             img = img.resize((500, 200), Image.ANTIALIAS)
             res = re.search('\w*.png', filename).group(0)
             fname = res[:-4]
-            print(fname)
             self._images[fname] = ImageTk.PhotoImage(img)
 
         filename = posixpath.join(HUD_PATH, 'radar_map.png')
@@ -138,9 +149,10 @@ class _StartScreen(Frame):
         # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
 
     def __create_buttons(self):
-        self._buttons['shoot'] = Button(self, text='shoot')
-        self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
-        self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
+        pass
+        # self._buttons['shoot'] = Button(self, text='shoot')
+        # self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
+        # self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
 
     def __create_chatbox(self):
         for id_, name in enumerate(['friend_bg', 'me_bg']):
@@ -254,7 +266,6 @@ class _StartScreen(Frame):
             gun_walk_keyword = '%02d' % self._controller.clients[who].gun_walk_loop_id
             self._canvas[name].create_image(300, 400, image=self._images[gun_walk_keyword], anchor=NW)
             self._canvas[name].create_image(400, 300, image=self._concentric[0], anchor=CENTER)
-
 
         self._canvas[name].create_image(0, 0, image=self._images['radar_map'], anchor=NW)
         self._canvas[name].create_image(300, 550, image=self._images['hp'], anchor=NW)
