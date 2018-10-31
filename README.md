@@ -8,7 +8,7 @@ This demo shows proof of concept by using the camera to catch player's **emoji**
 
 ## Introduction
 
-Reference [PDF](intro.pdf) from final report.
+Reference [PDF](assets/intro.pdf) from final report.
 
 <br>
 
@@ -34,7 +34,7 @@ python demo.py
 <br/>
 
 ## Demo
-![](https://dsmilab.nctu.edu.tw/static/assets/video/getaway_demo.gif)
+![](assets/getaway_demo.gif)
 
 
 <br/>
