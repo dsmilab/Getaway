@@ -6,10 +6,17 @@ This demo uses the camera to catch player's emoji and gesture, and then show the
 
 <br/>
 
+## Introduction
+
+Reference [PDF](intro.pdf) from final report.
+
+<br>
+
 ## Requirement
 
-1. Camera
+1. Camera device
 2. Python 3
+3. Above 1800x1000 pixel screen resolution
 
 <br/>
 
@@ -28,6 +35,7 @@ python demo.py
 
 ## Demo
 ![](https://dsmilab.nctu.edu.tw/static/assets/video/getaway_demo.gif)
+
 
 <br/>
 
