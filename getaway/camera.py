@@ -7,7 +7,7 @@ class Camera:
     def __init__(self):
         self._cap = None
         # create instance of VideoCapture
-        self._cap = cv2.VideoCapture(posixpath.join(MAP_PATH, 'left_view.mp4'))
+        self._cap = cv2.VideoCapture(0)
         # set frame rate
         self._cap.set(cv2.CAP_PROP_FPS, 60)
         sys.stdout.write('camera started!\n')
