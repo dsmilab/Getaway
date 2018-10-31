@@ -1,0 +1,2 @@
+anaconda3 >= 5.3.0
+keras >= 2.2.4
