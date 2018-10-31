@@ -1,8 +1,8 @@
 # Getaway
 
-This is a small project representing proof of concept. 
+This is a small project competeing on [2018 Meichu x Hachathon](https://hackathon.nctu.me/2018/#/sponsor-1).
 
-This demo uses the camera to catch player's emoji and gesture, and then show them on the screen to improve the game experience.
+This demo shows proof of concept by using the camera to catch player's **emoji** and **gesture**, and then show them on the screen to improve the game experience.
 
 <br/>
 
@@ -43,6 +43,6 @@ python demo.py
 
 All original picture rights to the original author of all. 
 
-If there is any wrong , please contact us as soon as possible to do delete processing.
+If there is any wrong, please contact us as soon as possible to do delete processing.
 
 © 2018 DSMI Lab, team 逃過一劫.
