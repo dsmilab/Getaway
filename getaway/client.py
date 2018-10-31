@@ -25,13 +25,6 @@ class Client(object):
         self._zoom_mode = False
         self._gun_walk_loop_id = 1
 
-    @staticmethod
-    def play_sound(sound_path):
-        def __os_system(sound_path_):
-            os.system('play ' + sound_path_)
-
-        threading.Thread(target=__os_system, args=(sound_path,)).start()
-
     def add_image(self, keyword, x, y, filename, timer=5):
         img = Image.open(filename).convert('RGBA')
         img = img.resize((200, 200), Image.ANTIALIAS)

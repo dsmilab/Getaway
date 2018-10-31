@@ -67,28 +67,22 @@ class _StartScreen(Frame):
         self.__create_background()
         self.__create_movies()
         self.__create_images()
-        self.__create_buttons()
         self.__create_chatbox()
 
     def __create_background(self):
-        # self._canvas['bg'] = Canvas(self)
-        #
-        # self._canvas['bg'].place(x=0, y=0, width=1800, height=1000)
         filename = posixpath.join(HUD_PATH, 'bg.png')
         self._bg_image = PhotoImage(file=filename)
         background_label = Label(self, image=self._bg_image)
         background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        # self._canvas['bg'].pack()
-
     def __create_movies(self):
         self._canvas['friend_bg'] = Canvas(self)
         self._canvas['friend_bg'].place(x=0, y=100, width=800, height=600)
-        self._cap['friend_bg'] = cv2.VideoCapture('data/map/20181027_075601.mp4')
+        self._cap['friend_bg'] = cv2.VideoCapture(posixpath.join(MAP_PATH, 'left_view.mp4'))
 
         self._canvas['me_bg'] = Canvas(self)
         self._canvas['me_bg'].place(x=1000, y=100, width=800, height=600)
-        self._cap['me_bg'] = cv2.VideoCapture('data/map/20181027_075228.mp4')
+        self._cap['me_bg'] = cv2.VideoCapture(posixpath.join(MAP_PATH, 'right_view.mp4'))
 
         self._canvas['camera'] = Canvas(self)
         self._canvas['camera'].place(x=1400, y=700, width=400, height=300)
@@ -145,14 +139,6 @@ class _StartScreen(Frame):
         img = Image.open(filename).convert('RGBA')
         img = img.resize((150, 150), Image.ANTIALIAS)
         self._images['team2'] = ImageTk.PhotoImage(img)
-        # self._canvas['friend_concentric'] = Canvas(self)
-        # self._canvas['friend_concentric'].place(x=0, y=0, width=1200, height=800)
-
-    def __create_buttons(self):
-        pass
-        # self._buttons['shoot'] = Button(self, text='shoot')
-        # self._buttons['shoot'].bind('<Button-1>', self.__click_shoot_button)
-        # self._buttons['shoot'].place(x=800, y=800, width=200, height=50)
 
     def __create_chatbox(self):
         for id_, name in enumerate(['friend_bg', 'me_bg']):
@@ -166,13 +152,6 @@ class _StartScreen(Frame):
                                        bg='black')
 
             self._chatbox[name].place(x=1 + 1000 * id_, y=629, width=320, height=70)
-
-    def __click_shoot_button(self, event):
-        self._controller.clients[1].play_sound(posixpath.join(SOUND_PATH, 'gun_effect_1.mp3'))
-        self._chatbox['friend_bg'].config(state=NORMAL)
-        self._chatbox['friend_bg'].insert(END, 'fighting!\n')
-        self._chatbox['friend_bg'].see(END)
-        self._chatbox['friend_bg'].config(state=DISABLED)
 
     def __trigger_alert_event(self, position, timer=5):
         text_str = ['alert_left', 'alert_right']
@@ -227,7 +206,6 @@ class _StartScreen(Frame):
 
         ret, frame = self._camera.read()
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        # cv2image = cv2.flip(cv2image, 1)
         self._controller.clients[1].write_camera_image(cv2image)
         pos = self._controller.clients[1].query_pos()
         sys.stdout.write('>> %s\n' % pos)
